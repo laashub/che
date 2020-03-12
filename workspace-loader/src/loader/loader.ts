@@ -81,7 +81,7 @@ export class Loader {
     }
 
     onclickReload(): boolean {
-        window.location.reload();
+        window.location.search = 'debug=true';
         return false;
     }
 

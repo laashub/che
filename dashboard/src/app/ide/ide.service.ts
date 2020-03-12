@@ -143,7 +143,7 @@ class IdeSvc {
     this.ideAction = ideAction;
   }
 
-  openIde(workspaceId: string): void {
+  openIde(workspaceId: string, isDebugMode?: boolean): void {
     (this.$rootScope as any).hideNavbar = false;
 
     this.updateRecentWorkspace(workspaceId);
@@ -151,6 +151,10 @@ class IdeSvc {
     let inDevMode = this.userDashboardConfig.developmentMode;
     let randVal = Math.floor((Math.random() * 1000000) + 1);
     let appendUrl = '?uid=' + randVal;
+    if (isDebugMode) {
+      appendUrl = appendUrl + '&debug=' + isDebugMode;
+    }
+
     let workspace = this.cheWorkspace.getWorkspaceById(workspaceId);
     this.openedWorkspace = workspace;
 
