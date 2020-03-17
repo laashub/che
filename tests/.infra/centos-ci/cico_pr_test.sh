@@ -18,32 +18,10 @@ function prepareCustomResourceFile() {
   cat /tmp/custom-resource.yaml
 }
 
-setupEnvs
-installKVM
-installDependencies
-installCheCtl
-installAndStartMinishift
-loginToOpenshiftAndSetDevRole
-prepareCustomResourceFile
-deployCheIntoCluster --chenamespace=eclipse-che --che-operator-cr-yaml=/tmp/custom-resource.yaml
-createTestUserAndObtainUserToken
-launchOpenshiftTest
-echo "=========================== THIS IS POST TEST ACTIONS =============================="
-archiveArtifacts "che-openshift-connector"
-if [[ "$IS_TESTS_FAILED" == "true" ]]; then exit 1; fi
 
-
-
-launchOpenshiftTest(){
+function launchOpenshiftTest(){
   defineCheRoute
-  ### Create workspace
-  DEV_FILE_URL=$1
-  if [[ ${DEV_FILE_URL} = "" ]]; then # by default it is used 'happy-path-devfile' yaml from CHE 'master' branch
-    chectl workspace:start --access-token "$USER_ACCESS_TOKEN" --devfile=https://raw.githubusercontent.com/eclipse/che/master/tests/e2e/files/happy-path/happy-path-workspace.yaml
-  else
-    chectl workspace:start --access-token "$USER_ACCESS_TOKEN" $1 # it can be directly indicated other URL to 'devfile' yaml
-  fi
-
+  
   ### Create directory for report
   mkdir report
   REPORT_FOLDER=$(pwd)/report
@@ -57,6 +35,20 @@ launchOpenshiftTest(){
   -e TS_SELENIUM_W3C_CHROME_OPTION=false \
   -e TS_SELENIUM_START_WORKSPACE_TIMEOUT=900000 \
   -e TEST_SUITE=openshift-connector \
-  -e NODE_TLS_REJECT_UNAUTHORIZED=0
+  -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
   quay.io/eclipse/che-e2e:nightly || IS_TESTS_FAILED=true
 }
+
+setupEnvs
+installKVM
+installDependencies
+installCheCtl
+installAndStartMinishift
+loginToOpenshiftAndSetDevRole
+prepareCustomResourceFile
+deployCheIntoCluster --chenamespace=eclipse-che --che-operator-cr-yaml=/tmp/custom-resource.yaml
+createTestUserAndObtainUserToken
+launchOpenshiftTest
+echo "=========================== THIS IS POST TEST ACTIONS =============================="
+archiveArtifacts "che-openshift-connector"
+if [[ "$IS_TESTS_FAILED" == "true" ]]; then exit 1; fi
